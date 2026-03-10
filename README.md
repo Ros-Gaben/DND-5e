@@ -18,7 +18,7 @@ npm run dev
 
 
 
-## What technologies are used for this project, Bodya?
+## What technologies are used for this project?
 
 This project is built with:
 
