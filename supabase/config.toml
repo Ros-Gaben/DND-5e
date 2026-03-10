@@ -1,0 +1,10 @@
+project_id = "ujbvmweealotmjzbkska"
+
+[functions.chat]
+verify_jwt = true
+
+[functions.test-dalle]
+verify_jwt = false
+
+[functions.generate-avatar]
+verify_jwt = true

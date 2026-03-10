@@ -1,0 +1,202 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* D&D Dark Fantasy Theme */
+    --background: 25 35% 8%;
+    --foreground: 35 25% 85%;
+
+    --card: 25 30% 12%;
+    --card-foreground: 35 25% 85%;
+
+    --popover: 25 35% 10%;
+    --popover-foreground: 35 25% 85%;
+
+    --primary: 35 45% 60%;
+    --primary-foreground: 25 35% 8%;
+
+    --secondary: 30 25% 25%;
+    --secondary-foreground: 35 25% 85%;
+
+    --muted: 25 20% 20%;
+    --muted-foreground: 35 15% 60%;
+
+    --accent: 45 65% 55%;
+    --accent-foreground: 25 35% 8%;
+
+    --destructive: 0 65% 45%;
+    --destructive-foreground: 35 25% 95%;
+
+    --border: 30 25% 25%;
+    --input: 25 25% 18%;
+    --ring: 35 45% 60%;
+
+    --radius: 0.5rem;
+
+    /* Fantasy-specific tokens */
+    --parchment: 40 35% 85%;
+    --parchment-dark: 35 30% 75%;
+    --gold: 45 75% 60%;
+    --gold-glow: 45 85% 70%;
+    --ember: 15 75% 50%;
+    --ember-glow: 15 85% 60%;
+    --shadow: 25 40% 5%;
+    
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, hsl(45 65% 55%), hsl(35 55% 45%));
+    --gradient-ember: linear-gradient(135deg, hsl(15 75% 50%), hsl(10 70% 40%));
+    --gradient-dark: linear-gradient(180deg, hsl(25 35% 8%), hsl(25 40% 5%));
+    
+    /* Shadows & Glows */
+    --shadow-deep: 0 10px 40px -10px hsl(25 40% 5% / 0.8);
+    --glow-gold: 0 0 20px hsl(45 75% 60% / 0.3);
+    --glow-ember: 0 0 30px hsl(15 75% 50% / 0.4);
+    
+    /* Animations */
+    --transition-magical: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Crimson Text', serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cinzel', serif;
+  }
+}
+
+@layer utilities {
+  .text-parchment {
+    color: hsl(var(--parchment));
+  }
+  
+  .text-gold {
+    color: hsl(var(--gold));
+  }
+  
+  .text-ember {
+    color: hsl(var(--ember));
+  }
+  
+  .bg-parchment {
+    background-color: hsl(var(--parchment));
+  }
+  
+  .bg-parchment-texture {
+    background-image: 
+      repeating-linear-gradient(0deg, hsl(var(--parchment)) 0px, transparent 1px, transparent 2px, hsl(var(--parchment)) 3px),
+      repeating-linear-gradient(90deg, hsl(var(--parchment)) 0px, transparent 1px, transparent 2px, hsl(var(--parchment)) 3px),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.01'/%3E%3C/svg%3E");
+    background-size: 3px 3px, 3px 3px, cover;
+    background-blend-mode: overlay;
+    opacity: 0.4;
+  }
+  
+  .bg-gradient-gold {
+    background: var(--gradient-gold);
+  }
+  
+  .bg-gradient-ember {
+    background: var(--gradient-ember);
+  }
+  
+  .shadow-deep {
+    box-shadow: var(--shadow-deep);
+  }
+  
+  .glow-gold {
+    box-shadow: var(--glow-gold);
+  }
+  
+  .glow-ember {
+    box-shadow: var(--glow-ember);
+  }
+  
+  .transition-magical {
+    transition: var(--transition-magical);
+  }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+  
+  @keyframes glow-pulse {
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(45 75% 60% / 0.3);
+    }
+    50% { 
+      box-shadow: 0 0 30px hsl(45 75% 60% / 0.5);
+    }
+  }
+  
+  @keyframes border-glow-gold {
+    0%, 100% { 
+      border-color: hsl(45 75% 60% / 0.5);
+      box-shadow: 0 0 10px hsl(45 75% 60% / 0.2), inset 0 0 10px hsl(45 75% 60% / 0.05);
+    }
+    50% { 
+      border-color: hsl(45 85% 70% / 0.8);
+      box-shadow: 0 0 20px hsl(45 85% 70% / 0.4), inset 0 0 15px hsl(45 75% 60% / 0.1);
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .animate-flicker {
+    animation: flicker 8s ease-in-out infinite;
+  }
+  
+  .animate-glow-pulse {
+    animation: glow-pulse 4s ease-in-out infinite;
+  }
+  
+  .animate-border-glow-gold {
+    animation: border-glow-gold 3s ease-in-out infinite;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    
+    .animate-flicker,
+    .animate-glow-pulse,
+    .animate-float,
+    .animate-fade-in,
+    .animate-spin {
+      animation: none !important;
+    }
+  }
+}
