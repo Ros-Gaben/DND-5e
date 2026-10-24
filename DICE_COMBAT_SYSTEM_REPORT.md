@@ -1,4 +1,4 @@
-# Dice Rolling & Combat System - Full Test Report (v2)
+# Dice Rolling & Combat System - Full Test Report
 
 ## Executive Summary
 
@@ -82,23 +82,7 @@ This report provides a comprehensive analysis of the dice rolling and combat sys
 │                                                                                      │
 └─────────────────────────────────────────────────────────────────────────────────────┘
 ```
-
----
-
-## 2. DETAILED CODE ANALYSIS
-
-### 2.1 Roll Request Queue System (NEW)
-
-**Location:** `src/pages/Game.tsx` lines 124-131
-
-```typescript
-// Roll request queue - stores all pending roll requests from AI
-const [rollRequestQueue, setRollRequestQueue] = useState<ParsedRollRequest[]>([]);
-// Current pending roll is the first item in the queue
-const pendingRollRequest = rollRequestQueue.length > 0 ? rollRequestQueue[0] : null;
-// Track if the current roll has been completed
-const [rollCompleted, setRollCompleted] = useState(false);
-```
+### 2 Roll Request Queue System (NEW)
 
 **How it works:**
 1. AI sends response with one or more `[ROLL_REQUEST]` tags
@@ -115,99 +99,11 @@ const [pendingRollRequest, setPendingRollRequest] = useState<ParsedRollRequest |
 // Would get cleared on ANY AI response, even if roll wasn't done
 ```
 
-### 2.2 Roll Completion Handler (NEW)
 
-**Location:** `src/pages/Game.tsx` lines 189-192
-
-```typescript
-const completeCurrentRoll = useCallback(() => {
-  setRollRequestQueue(prev => prev.slice(1)); // Remove first item
-  setRollCompleted(true);
-}, []);
-```
 
 **Called from:** `handleDirectSendRoll` (Game.tsx:659)
 
 Ensures rolls are only cleared when player actually sends the result to chat.
-
-### 2.3 Combat HP Synchronization (NEW)
-
-**Location:** `src/pages/Game.tsx` lines 155-186
-
-```typescript
-const handlePlayerHPChange = useCallback(async (newHP: number) => {
-  // Clamp HP between 0 and max
-  const clampedHP = Math.max(0, Math.min(newHP, character.max_hit_points));
-  
-  // Update database
-  await supabase.from('characters').update({ hit_points: clampedHP }).eq('id', characterId);
-  
-  // Update character state
-  setCharacter(prev => prev ? { ...prev, hit_points: clampedHP } : null);
-  
-  // Sync with combat tracker
-  setCombatState(prev => ({
-    ...prev,
-    combatants: prev.combatants.map(c => 
-      c.isPlayer ? { ...c, currentHP: clampedHP } : c
-    )
-  }));
-}, [characterId, character]);
-```
-
-### 2.4 Combat Command Processing (ENHANCED)
-
-**Location:** `src/utils/combatCommands.ts`
-
-**New `add_player` command (line 121-136):**
-```typescript
-case "add_player": {
-  const hasPlayer = combatants.some(c => c.isPlayer);
-  if (!hasPlayer && playerData) {
-    const initiative = command.data.initiative ?? playerData.initiative ?? Math.floor(Math.random() * 20) + 1;
-    const playerCombatant = createCombatantFromCommand({
-      name: playerData.name,
-      hp: playerData.hp,
-      maxHP: playerData.maxHP,
-      ac: playerData.ac,
-      initiative,
-    }, true);
-    combatants = sortByInitiative([...combatants, playerCombatant]);
-  }
-  break;
-}
-```
-
-**HP sync callback in damage command (line 196-198):**
-```typescript
-if (c.isPlayer && onPlayerHPSync) {
-  onPlayerHPSync(newHP);
-}
-```
-
-### 2.5 AI Instructions (STRENGTHENED)
-
-**Location:** `supabase/functions/chat/index.ts` lines 492-548
-
-Key rules added:
-```
-**ABSOLUTE RULES - NEVER BREAK THESE:**
-1. NEVER assume what the player rolls
-2. NEVER narrate the outcome before receiving the result
-3. NEVER skip requesting a roll for combat actions
-4. ALWAYS wait for the player's response before continuing
-5. For attacks: Request attack → Wait → If hit, request damage → Wait → Narrate
-```
-
-**Combat flow instructions (lines 446-458):**
-```
-**PROPER COMBAT FLOW:**
-1. When combat starts, use [COMBAT:start_combat] and request initiative
-2. WAIT for the player's initiative roll result
-3. After receiving their roll, use [COMBAT:add_player] with their actual initiative
-```
-
----
 
 ## 3. SIMULATED COMBAT TEST: 2 GOBLINS
 
@@ -405,63 +301,3 @@ Combat ends. You are victorious!
 | Examples | "Iron Longsword" fails | "Iron Longsword" → "Longsword" |
 
 ---
-
-## 5. REMAINING ISSUES & STATUS
-
-### 5.1 Confirmed Working ✅
-
-| Feature | Status | Evidence |
-|---------|--------|----------|
-| Roll request queue | ✅ Working | Queue state, `completeCurrentRoll` |
-| Initiative flow | ✅ Working | `add_player` command, AI instructions |
-| HP sync | ✅ Working | `PlayerHPSyncCallback`, triple-update |
-| Weapon fallback | ✅ Working | `getGenericWeaponData()` returns 1d6 |
-| AI instructions | ✅ Deployed | Edge function updated |
-
-### 5.2 Potential Issues ⚠️
-
-| Issue | Risk | Status |
-|-------|------|--------|
-| AI skipping rolls | Medium | Instructions improved, needs real testing |
-| Queue not visible | Low | Only first roll shown, no count indicator |
-| Page refresh loses queue | Low | localStorage not implemented |
-| Critical hit auto-damage | Low | Requires AI to send damage request |
-
-### 5.3 Recommended Improvements 📋
-
-1. **Add queue indicator** - Show "2 more rolls pending" badge
-2. **Persist queue** - Save to localStorage, restore on load
-3. **AI validation** - Detect when AI narrates without requesting roll
-4. **DM Mode toggle** - UI for `dmModeEnabled` setting
-
----
-
-## 6. CONCLUSIONS
-
-### 6.1 System Readiness
-
-| Criteria | Rating | Notes |
-|----------|--------|-------|
-| Roll request handling | 9/10 | Queue works, minor UI polish needed |
-| Initiative flow | 9/10 | Proper 3-step, AI compliance TBD |
-| HP synchronization | 10/10 | Fully unified, DB-backed |
-| Weapon matching | 8/10 | Good fallbacks, more fuzzy could help |
-| AI instructions | 9/10 | Comprehensive, real-world testing needed |
-| **Overall** | **9/10** | Ready for testing |
-
-### 6.2 Test Command
-
-To manually test:
-1. Select a character with an equipped weapon
-2. Start game and say: "I explore the forest and encounter 2 goblins!"
-3. Verify:
-   - Combat tracker opens
-   - Initiative button becomes active
-   - After rolling, player appears with correct initiative
-   - Attack/damage buttons appear at correct times
-   - Player HP stays synchronized across all displays
-
----
-
-*Report generated: 2026-01-14*
-*System version: Post-Phase-4 implementation*
