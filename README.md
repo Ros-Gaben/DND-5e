@@ -1,5 +1,4 @@
-# Welcome to our project
-# Use your preferred IDE!
+# Welcome to project
 
 Follow these steps to run local:
 
